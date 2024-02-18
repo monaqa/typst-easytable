@@ -67,21 +67,7 @@
 }
 
 #let easytable(decoration: hline_tb, em_dash: auto, columns, body) = {
-  let em_dash = if em_dash == auto {
-    (_kind: "easytable.push_hline", args: (stroke: 0.5pt, expand: -2pt))
-  } else { em_dash }
-  let operations = body.children.filter(
-    (c) => c == [---] or c.at("value", default: (:)).at("_kind", default: "").starts-with("easytable"),
-  ).map(c => if c == [---] {
-    em_dash
-  } else {
-    if c.value._kind == "easytable.composite" {
-      c.value.items
-    } else {
-      c.value
-    }
-  }).flatten()
-  let operations = decoration(operations)
+  let operations = decoration(body)
   _easytable_processor(columns, operations)
 }
 
@@ -93,7 +79,7 @@
       return e
     }
   })
-  metadata((_kind: "easytable.set_layout", layout: layout_func))
+  ((_kind: "easytable.set_layout", layout: layout_func),)
 }
 
 #let td(
@@ -118,12 +104,12 @@
   )
 
   if header {
-    metadata((_kind: "easytable.composite", items: (
+    (
       data,
       (_kind: "easytable.push_hline", args: (stroke: 0.5pt, expand: -2pt)),
-    )))
+    )
   } else {
-    metadata(data)
+    (data,)
   }
 }
 
