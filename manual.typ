@@ -1,11 +1,35 @@
 #import "@preview/tidy:0.2.0"
-#import "src/lib.typ": *
+#import "src/lib.typ": easytable, elem
+#import elem: *
 
-#set text(font: "Noto Serif CJK JP")
+#let example_result(body) = block(stroke: 0.5pt + luma(80%), inset: 10pt, breakable: false, body)
+
+#let example(code, result) = grid(columns: 2, column-gutter: 5pt, {
+  set block(breakable: false)
+  code
+}, example_result(result))
+
+#set par(justify: true)
+
+// #set text(font: "Noto Serif CJK JP")
 #show heading: set text(font: "Noto Sans CJK JP")
 
 #show heading: set pad(bottom: 2em)
 #set heading(numbering: "1.")
+
+#show raw.where(block: false): box.with(
+  fill: black.lighten(95%),
+  inset: (x: 2pt, y: 0pt),
+  outset: (x: 0pt, y: 2pt),
+  radius: 1.5pt,
+)
+
+#show raw.where(block: true, lang: "typst"): block.with(
+  width: 100%,
+  fill: black.lighten(95%),
+  inset: (x: 8pt, y: 6pt),
+  radius: (top-left: 6pt, bottom-right: 6pt, rest: 0pt),
+)
 
 #align(center)[
   #text(size: 2em, [Typst-Easytable Package])
@@ -15,33 +39,86 @@
   #datetime.today().display()
 ]
 
-#outline(title: "目次", indent: 1em, depth: 3)
+#outline(title: "Outline", indent: 1em, depth: 3)
 
-= 概要
+= Overview
 
-`typst-easytable` は Typst で簡単に表を記述するためのパッケージです。
+`typst-easytable` is a simple package for writing tables in Typst.
 
-== `typst-easytable` の目指すもの
+== Goal of `typst-easytable`
 
-- 簡潔で視認性の高いマークアップ
-- ある程度の汎用性
+- Concise, highly visible markup
+- Some degree of flexibility, versatility
 
-== `typst-easytable` の目指さないもの
+== Non-Goal of `typst-easytable`
 
-- ほとんどの用途で必要のない表機能の提供
+- Features that are not needed for most applications
 
-= 使い方
+= Usage
 
 ```typst
-#import "@preview/easytable:0.1.0": *
+#import "@preview/easytable:0.1.0": easytable, elem
 ```
 
-== 最も単純な表
+== A Simple Table
 
-シンプルに記述できます。
+Simple tables can be described simply.
 
+#example[
 ```typst
 #easytable({
+  elem.td[How      ][I      ][want      ]
+  elem.td[a        ][drink, ][alcoholic ]
+  elem.td[of       ][course,][after     ]
+  elem.td[the      ][heavy  ][lectures  ]
+  elem.td[involving][quantum][mechanics.]
+})
+```
+][
+  #easytable({
+    elem.td[How ][I ][want ]
+    elem.td[a ][drink, ][alcoholic]
+    elem.td[of ][course,][after ]
+    elem.td[the ][heavy ][lectures ]
+    elem.td[involving][quantum][mechanics.]
+  })
+]
+
+`elem.td` is a function representing data element in the `elem` module.
+To add a table header, use the `elem.th` function. It represents header element.
+
+#example[
+```typst
+#easytable({
+  elem.th[Header 1 ][Header 2][Header 3  ]
+  elem.td[How      ][I       ][want      ]
+  elem.td[a        ][drink,  ][alcoholic ]
+  elem.td[of       ][course, ][after     ]
+  elem.td[the      ][heavy   ][lectures  ]
+  elem.td[involving][quantum ][mechanics.]
+})
+```
+][
+  #easytable({
+    elem.th[Header 1 ][Header 2][Header 3 ]
+    elem.td[How ][I ][want ]
+    elem.td[a ][drink, ][alcoholic ]
+    elem.td[of ][course, ][after ]
+    elem.td[the ][heavy ][lectures ]
+    elem.td[involving][quantum ][mechanics.]
+  })
+]
+
+If you feel tedious to write `elem.*`, you can omit it by writing as follows:
+
+```typst
+// If you don't care having functions such as `th` and `td` in global namespace,
+// it is easiest to write the import statement here!
+#import elem: *
+
+#easytable({
+  // If you care, please state the following for each table.
+  // import elem: *
   td[How      ][I      ][want      ]
   td[a        ][drink, ][alcoholic ]
   td[of       ][course,][after     ]
@@ -50,217 +127,367 @@
 })
 ```
 
+We will omit `import elem: *` in examples hereafter.
+
+The argument of `elem.td` is variadic, i.e., you can easily create tables with any number of columns.
+
+#example[
+#set text(size: 0.9em)
+```typst
 #easytable({
-  td[How ][I ][want ]
-  td[a ][drink, ][alcoholic]
-  td[of ][course,][after ]
-  td[the ][heavy ][lectures ]
+  vline(x: 1, stroke: 0.5pt)
+  cstyle(..(center,) * 7)
+
+  th[$*$][$e$][$r$][$r^2$][$s$][$r s$][$r^2s$]
+  td[$e$][$e$][$r$][$r^2$][$s$][$r s$][$r^2s$]
+  td[$r$][$r$][$r^2$][$e$][$r s$][$r^2s$][$s$]
+  td[$r^2$][$r^2$][$e$][$r$][$r^2s$][$s$][$r s$]
+  td[$s$][$s$][$r^2s$][$r s$][$e$][$r^2$][$r$]
+  td[$r s$][$r s$][$s$][$r^2s$][$r$][$e$][$r^2$]
+  td[$r^2s$][$r^2s$][$r s$][$s$][$r^2$][$r$][$e$]
+})
+```
+][
+  #easytable({
+    vline(x: 1, stroke: 0.5pt)
+    cstyle(..(center,) * 7)
+
+    th[$*$][$e$][$r$][$r^2$][$s$][$r s$][$r^2s$]
+    td[$e$][$e$][$r$][$r^2$][$s$][$r s$][$r^2s$]
+    td[$r$][$r$][$r^2$][$e$][$r s$][$r^2s$][$s$]
+    td[$r^2$][$r^2$][$e$][$r$][$r^2s$][$s$][$r s$]
+    td[$s$][$s$][$r^2s$][$r s$][$e$][$r^2$][$r$]
+    td[$r s$][$r s$][$s$][$r^2s$][$r$][$e$][$r^2$]
+    td[$r^2s$][$r^2s$][$r s$][$s$][$r^2$][$r$][$e$]
+  })
+]
+
+Please be careful, the number of arguments to `th` and `td` (and `cstyle` and `cwidth`, described below) elements must be consistent within a table. If not, the Typst processor throws an error.
+Conversely, there is no need to worry about forgetting to put a cell and not noticing that the layout is broken.
+
+== Changing Alignment and Width of Columns
+
+To change the alignment for each column, use `cstyle`:
+
+#example[
+```typst
+#easytable({
+  cstyle(left, center, right)
+  th[Header 1 ][Header 2][Header 3  ]
+  td[How      ][I       ][want      ]
+  td[a        ][drink,  ][alcoholic ]
+  td[of       ][course, ][after     ]
+  td[the      ][heavy   ][lectures  ]
+  td[involving][quantum ][mechanics.]
+})
+```
+][
+  #easytable({
+    cstyle(left, center, right)
+    th[Header 1 ][Header 2][Header 3 ]
+    td[How ][I ][want ]
+    td[a ][drink, ][alcoholic ]
+    td[of ][course, ][after ]
+    td[the ][heavy ][lectures ]
+    td[involving][quantum ][mechanics.]
+  })
+]
+
+What if I want to change the length of each column? Use `cwidth`:
+
+```typst
+#easytable({
+  cwidth(100pt, 1fr, 20%)
+  th[Header 1 ][Header 2][Header 3  ]
+  td[How      ][I       ][want      ]
+  td[a        ][drink,  ][alcoholic ]
+  td[of       ][course, ][after     ]
+  td[the      ][heavy   ][lectures  ]
+  td[involving][quantum ][mechanics.]
+})
+```
+#example_result[
+  #easytable({
+    cwidth(100pt, 1fr, 20%)
+    th[Header 1 ][Header 2][Header 3 ]
+    td[How ][I ][want ]
+    td[a ][drink, ][alcoholic ]
+    td[of ][course, ][after ]
+    td[the ][heavy ][lectures ]
+    td[involving][quantum ][mechanics.]
+  })
+]
+
+It is of course possible to use `cstyle` and `cwidth` in combination.
+
+```typst
+#easytable({
+  cwidth(100pt, 1fr, 20%)
+  cstyle(left, center, right)
+  th[Header 1 ][Header 2][Header 3  ]
+  td[How      ][I       ][want      ]
+  td[a        ][drink,  ][alcoholic ]
+  td[of       ][course, ][after     ]
+  td[the      ][heavy   ][lectures  ]
+  td[involving][quantum ][mechanics.]
+})
+```
+
+#example_result[
+  #easytable({
+    cwidth(100pt, 1fr, 20%)
+    cstyle(left, center, right)
+    th[Header 1 ][Header 2][Header 3 ]
+    td[How ][I ][want ]
+    td[a ][drink, ][alcoholic ]
+    td[of ][course, ][after ]
+    td[the ][heavy ][lectures ]
+    td[involving][quantum ][mechanics.]
+  })
+]
+
+It is also possible to write long content that spans multiple lines.
+
+```typst
+#easytable({
+  cwidth(auto, 50%)
+  cstyle(right, left)
+  th[Term][Long Description]
+  td[*LaTeX*][A great typesetting system. May be difficult to learn.]
+  td([*Typst*], [
+    A great typesetting system! Specifically, it offers the following advantages:
+
+    - Very easy to install
+    - Very easy to learn
+
+    We encourage everyone to use it.
+  ])
+})
+```
+
+#example_result[
+  #easytable(
+    {
+      cwidth(auto, 50%)
+      cstyle(right, left)
+      th[Term][Long Description]
+
+      td[*LaTeX*][A great typesetting system. May be difficult to learn.]
+
+      td(
+        [*Typst*],
+        [
+          A great typesetting system! Specifically, it offers the following advantages:
+
+          - Very easy to install
+          - very easy to learn
+
+          We encourage everyone to use it.
+        ],
+      )
+    },
+  )
+]
+
+== Customizing Element
+
+Element `td` has an keyword argument `trans`, which can be used to customize the layout of a particular line.
+
+#example[
+```typst
+#easytable({
+  let td2 = td.with(trans: emph)
+  let td3 = td.with(
+    trans: (c) => box(fill: blue, inset: 3pt, text(size: 0.8em, fill: white, c)),
+  )
+
+  th[Header 1][Header 2][Header 3]
+  td[How][I][want]
+  td2[a][drink,][alcoholic]
+  td[of][course,][after]
+  td3[the][heavy][lectures]
   td[involving][quantum][mechanics.]
 })
+```
+][
+  #easytable(
+    {
+      let td2 = td.with(trans: emph)
+      let td3 = td.with(
+        trans: (c) => box(fill: blue, inset: 3pt, text(size: 0.8em, fill: white, c)),
+      )
+      th[Header 1][Header 2][Header 3]
+      td[How][I][want]
+      td2[a][drink,][alcoholic]
+      td[of][course,][after]
+      td3[the][heavy][lectures]
+      td[involving][quantum][mechanics.]
+    },
+  )
+]
 
-`td` はデータを表す関数です。ヘッダを追加するには `th` 関数を用いて以下のようにします。
+If you want to assign a common layout to all rows, you can override the definition of `td` itself locally.
 
+#example[
+```typst
+#easytable(
+  {
+    let td = td.with(trans: pad.with(x: 3pt))
+
+    th[Header 1][Header 2][Header 3]
+    td[How][I][want]
+    td[a][drink,][alcoholic]
+    td[of][course,][after]
+    td[the][heavy][lectures]
+    td[involving][quantum][mechanics.]
+  },
+)
+```
+][
+  #easytable({
+    let td = td.with(trans: pad.with(y: 3pt))
+
+    th[Header 1 ][Header 2][Header 3 ]
+    td[How ][I ][want ]
+    td[a ][drink, ][alcoholic ]
+    td[of ][course, ][after ]
+    td[the ][heavy ][lectures ]
+    td[involving][quantum ][mechanics.]
+  })
+]
+
+Use the `cell_style` argument to change the background color.
+
+#example[
 ```typst
 #easytable({
-  th[Header 1 ][Header 2][Header 3  ]
-  td[How      ][I       ][want      ]
-  td[a        ][drink,  ][alcoholic ]
-  td[of       ][course, ][after     ]
-  td[the      ][heavy   ][lectures  ]
-  td[involving][quantum ][mechanics.]
+  let th = th.with(trans: emph)
+  let td = td.with(
+    cell_style: (x: none, y: none)
+      => (fill: if calc.even(y) {
+        luma(95%)
+      } else {
+        none
+      })
+  )
+
+  th[Header 1][Header 2][Header 3]
+  td[How][I][want]
+  td[a][drink,][alcoholic]
+  td[of][course,][after]
+  td[the][heavy][lectures]
+  td[involving][quantum][mechanics.]
 })
 ```
+][
+  #easytable({
+    let th = th.with(trans: emph)
+    let td = td.with(cell_style: (x: none, y: none)
+    => (fill: if calc.even(y) {
+      luma(95%)
+    } else {
+      none
+    }))
 
-#easytable({
-  th[Header 1 ][Header 2][Header 3 ]
-  td[How ][I ][want ]
-  td[a ][drink, ][alcoholic ]
-  td[of ][course, ][after ]
-  td[the ][heavy ][lectures ]
-  td[involving][quantum ][mechanics.]
-})
+    th[Header 1][Header 2][Header 3]
+    td[How][I][want]
+    td[a][drink,][alcoholic]
+    td[of][course,][after]
+    td[the][heavy][lectures]
+    td[involving][quantum][mechanics.]
+  })
+]
 
-4つ以上の列を追加することも簡単ですが...気をつけてください。
-1箇所でも列の数に矛盾があるとエラーになります。
-逆に言えば、セル1つずれてレイアウトが崩れていることに気づかない、という心配はありません。
+With `hline` you can draw a horizontal line at any position. The same goes for `vline`.
 
-列ごとに中央揃え、左揃え、右揃えを変えるには以下のようにします。
-
+#example[
 ```typst
 #easytable({
-  cstyle(left, center, right)
-  th[Header 1 ][Header 2][Header 3  ]
-  td[How      ][I       ][want      ]
-  td[a        ][drink,  ][alcoholic ]
-  td[of       ][course, ][after     ]
-  td[the      ][heavy   ][lectures  ]
-  td[involving][quantum ][mechanics.]
+  th[Header 1][Header 2][Header 3]
+  td[How][I][want]
+  hline(stroke: red)
+  td[a][drink,][alcoholic]
+  td[of][course,][after]
+  td[the][heavy][lectures]
+  td[involving][quantum][mechanics.]
+
+  // Specifying the insertion point directly
+  hline(stroke: 2pt + green, y: 4)
+  vline(
+    stroke: (paint: blue, thickness: 1pt, dash: "dashed"),
+    x: 2,
+    start: 1,
+    end: 5,
+  )
 })
 ```
+][
+  #easytable({
+    th[Header 1][Header 2][Header 3]
+    td[How][I][want]
+    hline(stroke: red)
+    td[a][drink,][alcoholic]
+    td[of][course,][after]
+    td[the][heavy][lectures]
+    td[involving][quantum][mechanics.]
 
-#easytable({
-  cstyle(left, center, right)
-  th[Header 1 ][Header 2][Header 3 ]
-  td[How ][I ][want ]
-  td[a ][drink, ][alcoholic ]
-  td[of ][course, ][after ]
-  td[the ][heavy ][lectures ]
-  td[involving][quantum ][mechanics.]
-})
+    // Specifying the insertion point directly
+    hline(stroke: 2pt + green, y: 4)
+    vline(
+      stroke: (paint: blue, thickness: 1pt, dash: "dashed"),
+      x: 2,
+      start: 1,
+      end: 5,
+    )
+  })
+]
 
-列ごとに長さを変えたければ？以下のようにします。
+== Customizing Column Style
 
+Use `cstyle`.
+The `cstyle` function accepts a function as well as an alignment as its argument.
+
+#example[
 ```typst
 #easytable({
-  cwidth(100pt, 1fr, 20%)
-  th[Header 1 ][Header 2][Header 3  ]
-  td[How      ][I       ][want      ]
-  td[a        ][drink,  ][alcoholic ]
-  td[of       ][course, ][after     ]
-  td[the      ][heavy   ][lectures  ]
-  td[involving][quantum ][mechanics.]
+  let show_tag(c) = box(
+    fill: red.darken(60%),
+    inset: (x: 2pt),
+    outset: (y: 2pt),
+    text(fill: white, size: 0.8em, c),
+  )
+
+  cstyle(left, center, left)
+  th[Header 1][Header 2][Header 3]
+
+  // Change style from the middle of the table
+  cstyle(left, center, show_tag)
+  td[How][I][want]
+  td[a][drink,][alcoholic]
+  td[of][course,][after]
+  td[the][heavy][lectures]
+  td[involving][quantum][mechanics.]
 })
 ```
+][
+  #easytable({
+    let show_tag(c) = box(
+      fill: red.darken(60%),
+      inset: (x: 2pt),
+      outset: (y: 2pt),
+      text(fill: white, size: 0.8em, c),
+    )
 
-#easytable({
-  cwidth(100pt, 1fr, 20%)
-  th[Header 1 ][Header 2][Header 3 ]
-  td[How ][I ][want ]
-  td[a ][drink, ][alcoholic ]
-  td[of ][course, ][after ]
-  td[the ][heavy ][lectures ]
-  td[involving][quantum ][mechanics.]
-})
+    cstyle(left, center, left)
+    th[Header 1][Header 2][Header 3]
 
-組み合わせて使うことも当然可能です。
+    // Change style from the middle of the table
+    cstyle(left, center, show_tag)
+    td[How][I][want]
+    td[a][drink,][alcoholic]
+    td[of][course,][after]
+    td[the][heavy][lectures]
+    td[involving][quantum][mechanics.]
+  })
+]
 
-```typst
-#easytable({
-  cwidth(100pt, 1fr, 20%)
-  cstyle(left, center, right)
-  th[Header 1 ][Header 2][Header 3  ]
-  td[How      ][I       ][want      ]
-  td[a        ][drink,  ][alcoholic ]
-  td[of       ][course, ][after     ]
-  td[the      ][heavy   ][lectures  ]
-  td[involving][quantum ][mechanics.]
-})
-```
-
-#easytable({
-  cwidth(100pt, 1fr, 20%)
-  cstyle(left, center, right)
-  th[Header 1 ][Header 2][Header 3 ]
-  td[How ][I ][want ]
-  td[a ][drink, ][alcoholic ]
-  td[of ][course, ][after ]
-  td[the ][heavy ][lectures ]
-  td[involving][quantum ][mechanics.]
-})
-
-今まではマークアップ上の見やすさのためカッコの位置を揃えていました。
-が、本来その必要はありません。
-そして、複数行に渡る長い content を記述することもできます。その場合も、表は問題なく組まれます。
-
-```typst
-#easytable({
-  cwidth(auto, 50%)
-  cstyle(right, left)
-  th[用語][長い説明]
-  td[LaTeX][素晴らしい組版システムです。学習難度は高いかもしれません。]
-  td([Typst], [
-    素晴らしい組版システム！具体的には以下のような利点があります。
-
-    - インストールがとても簡単
-    - 書きやすい
-
-    皆さんも是非使ってみましょう。
-  ])
-})
-```
-
-#easytable({
-  cwidth(auto, 50%)
-  cstyle(right, left)
-  th[用語][長い説明]
-  td[LaTeX][素晴らしい組版システムです。学習難度は高いかもしれません。]
-  td([Typst], [
-    素晴らしい組版システム！具体的には以下のような利点があります。
-
-    - インストールがとても簡単
-    - 書きやすい
-
-    皆さんも是非使ってみましょう。
-  ])
-})
-
-= カスタマイズ
-
-最初に述べておきますが、easytable はシンプルな表を楽に書くためのパッケージです。
-複雑なレイアウトを要求する表にはあまり適していない場合があります。
-とはいえ、最低限のカスタマイズはできます。
-
-== background color をセルごとに変える
-
-== 特定の列のレイアウトを変える
-
-== 特定の行のレイアウトを変える
-
-== 特定のセルのレイアウトを変える
-
-直接変えたほうが早いでしょう。
-
-== tablex にわたす引数を変える
-
-内部で tablex を使っており、自由に引数を渡すことができます。
-
-/// typstfmt::off
-
-
-// #easytable({
-//   cwidth(auto, auto, 1fr)
-//   cstyle(left + bottom, center + bottom, (c) => {
-//     text(fill: blue, size: 1.5em, align(right + bottom, c))
-//   })
-//
-//   th[header1   ][header2     ][header3     ]
-//   td[align left][align center][blue and big]
-//   td[a         ][b           ][c           ]
-//
-//   cstyle(
-//     left + bottom,
-//     (c) => {
-//       text(fill: blue, size: 1.5em, align(center + bottom, c))
-//     },
-//     right + bottom
-//   )
-//
-//   td[align left][align center][blue and big]
-//   td[a         ][b           ][c           ]
-// })
-//
-// #easytable({
-//   let td = td.with(trans: pad.with(y: 4pt))
-//   cwidth(40%, 40%)
-//   th[][例]
-//   td[Emph][_強調されたテキスト_]
-//   td[Code][`some code`]
-//   td[#align(horizon)[Math]][$ x = (-b plus.minus sqrt(b^2 - 4 a c)) / (2a) $]
-//   td[#align(horizon)[Inner table]][
-//     #easytable({
-//       cstyle(left, right)
-//       th[header 1][header 2]
-//       td[a][b]
-//   })
-//   ]
-// })
-//
-// #easytable({
-//   th[][例]
-//   td[Emph][_強調されたテキスト_]
-// })
-
-= API Reference
-
-#let docs = tidy.parse-module(read("src/lib.typ"))
-#tidy.show-module(docs)
