@@ -8,6 +8,7 @@ A Typst library for writing simple tables.
 
 ```typst
 #import "@preview/easytable:0.1.0": easytable, elem
+#import elem: *
 ```
 
 ## Manual
@@ -20,7 +21,6 @@ See [manual](./manual.pdf).
 
 ```typst
 #easytable({
-  import elem: *
   th[Header 1 ][Header 2][Header 3  ]
   td[How      ][I       ][want      ]
   td[a        ][drink,  ][alcoholic ]
